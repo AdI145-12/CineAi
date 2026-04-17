@@ -10,6 +10,22 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import json
 
+import urllib.request
+
+def download_datasets():
+    base = "https://huggingface.co/datasets/PandaBear900/cineai-tmdb/resolve/main"
+    files = {
+        "tmdb_5000_movies.csv": f"{base}/tmdb_5000_movies.csv",
+        "tmdb_5000_credits.csv": f"{base}/tmdb_5000_credits.csv"
+    }
+    for filename, url in files.items():
+        if not os.path.exists(filename):
+            print(f"Downloading {filename} from HuggingFace...")
+            urllib.request.urlretrieve(url, filename)
+            print(f"✅ {filename} ready!")
+
+download_datasets()
+
 app = Flask(__name__)
 app.secret_key = "movie_recommender_secret_2024"
 
