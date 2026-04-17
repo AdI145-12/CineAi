@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}CineAI — Top Movies{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-content">
+    <h1>Discover your next <em>favourite film</em></h1>
+    <p class="hero-sub">AI-powered recommendations using content filtering, metadata analysis & collaborative intelligence.</p>
+    <form class="search-bar" action="{{ url_for('search') }}" method="get">
+      <input type="text" name="q" id="search-input" placeholder="Search a movie title..." autocomplete="off">
+      <button type="submit" class="btn btn-primary">Search</button>
+      <div class="autocomplete-dropdown" id="autocomplete"></div>
+    </form>
+  </div>
+</section>
+
+{% if not data_loaded %}
+<div class="alert alert-warning">
+  <strong>⚠️ Dataset not found.</strong> Place <code>tmdb_5000_movies.csv</code> and <code>tmdb_5000_credits.csv</code> in the same folder as <code>app.py</code>, then restart.
+</div>
+{% endif %}
+
+<section class="section">
+  <div class="section-header">
+    <h2>🏆 Top Rated Movies</h2>
+    <span class="badge">Weighted by IMDB Formula</span>
+  </div>
+  <div class="movies-grid">
+    {% for movie in top_movies %}
+    <div class="movie-card">
+      <div class="movie-card-body">
+        <div class="movie-genres">
+          {% for g in movie.genres[:2] %}<span class="tag">{{ g }}</span>{% endfor %}
+        </div>
+        <h3 class="movie-title">{{ movie.title_x }}</h3>
+        <p class="movie-overview">{{ movie.overview[:120] }}...</p>
+        <div class="movie-meta">
+          <span class="score">⭐ {{ "%.1f"|format(movie.vote_average) }}</span>
+          <span class="votes">{{ "{:,}".format(movie.vote_count|int) }} votes</span>
+        </div>
+      </div>
+      <div class="movie-card-footer">
+        <a href="{{ url_for('recommend', title=movie.title_x) }}" class="btn btn-primary btn-sm">Get Recommendations</a>
+        {% if session.get('username') %}
+        <form method="POST" action="{{ url_for('rate_movie') }}" class="inline-rate">
+          <input type="hidden" name="title" value="{{ movie.title_x }}">
+          <select name="rating" class="rating-select">
+            <option value="">Rate</option>
+            {% for i in [1,2,3,4,5] %}<option value="{{ i }}">{{ i }}⭐</option>{% endfor %}
+          </select>
+          <button type="submit" class="btn btn-ghost btn-sm">✓</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

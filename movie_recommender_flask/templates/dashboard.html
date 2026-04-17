@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CineAI{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="section-header">
+    <h2>👤 {{ username }}'s Dashboard</h2>
+    <span class="badge">Personalized for you</span>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="dashboard-col">
+      <div class="card">
+        <h3>Your Ratings</h3>
+        {% if user_ratings %}
+          <div class="ratings-list">
+            {% for title, rating in user_ratings.items() %}
+            <div class="rating-item">
+              <a href="{{ url_for('recommend', title=title) }}" class="rating-title">{{ title }}</a>
+              <span class="rating-stars">{{ "⭐" * rating|int }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <p class="ratings-count">{{ user_ratings|length }} movies rated</p>
+        {% else %}
+          <div class="empty-state-sm">
+            <p>No ratings yet. <a href="{{ url_for('index') }}">Browse movies</a> and start rating!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dashboard-col">
+      <div class="card">
+        <h3>🤖 Personalized Recommendations</h3>
+        {% if message %}
+          <div class="alert alert-info">{{ message }}</div>
+        {% endif %}
+        {% if svd_recs %}
+        <div class="rec-list">
+          {% for rec in svd_recs %}
+          <div class="rec-item">
+            <div class="rec-info">
+              <a href="{{ url_for('recommend', title=rec.title_x) }}" class="rec-title">{{ rec.title_x }}</a>
+              <span class="score">⭐ {{ "%.1f"|format(rec.vote_average) }}</span>
+            </div>
+            <span class="tag tag-green">Score: {{ rec.personalized_score }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if user_ratings|length < 3 %}
+        <div class="progress-bar-wrap">
+          <div class="progress-label">Rate {{ 3 - user_ratings|length }} more movies to unlock personalized recs</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ (user_ratings|length / 3 * 100)|int }}%"></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

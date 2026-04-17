@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} Recommendations — CineAI{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="movie-hero-card">
+    <div class="movie-hero-info">
+      <div class="movie-genres">
+        {% for g in movie.get('genres', [])[:3] %}<span class="tag">{{ g }}</span>{% endfor %}
+      </div>
+      <h1>{{ title }}</h1>
+      {% if movie %}
+      <p class="movie-hero-overview">{{ movie.get('overview', '')[:250] }}...</p>
+      <div class="movie-meta">
+        <span class="score">⭐ {{ "%.1f"|format(movie.get('vote_average', 0)) }}</span>
+        <span class="votes">{{ "{:,}".format(movie.get('vote_count', 0)|int) }} votes</span>
+      </div>
+      {% endif %}
+      {% if session.get('username') %}
+      <form method="POST" action="{{ url_for('rate_movie') }}" class="inline-rate" style="margin-top:var(--space-4)">
+        <input type="hidden" name="title" value="{{ title }}">
+        <label style="color:var(--color-text-muted);font-size:var(--text-sm)">Rate this movie:</label>
+        <select name="rating" class="rating-select">
+          {% for i in [1,2,3,4,5] %}<option value="{{ i }}">{{ i }}⭐</option>{% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary btn-sm">Save Rating</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="hybrid">🔀 Hybrid (Best)</button>
+    <button class="tab" data-tab="content">🎭 Content-Based</button>
+  </div>
+
+  <div class="tab-content active" id="tab-hybrid">
+    <div class="section-header">
+      <h2>Hybrid Recommendations</h2>
+      <span class="badge">Similarity + Quality Score</span>
+    </div>
+    <div class="movies-grid">
+      {% for rec in hybrid_recs %}
+      <div class="movie-card">
+        <div class="movie-card-body">
+          <h3 class="movie-title"><a href="{{ url_for('recommend', title=rec.title_x) }}">{{ rec.title_x }}</a></h3>
+          <p class="movie-overview">{{ rec.overview[:100] if rec.overview else "" }}...</p>
+          <div class="movie-meta">
+            <span class="score">⭐ {{ "%.1f"|format(rec.vote_average) }}</span>
+            <span class="tag tag-green">Score: {{ "%.2f"|format(rec.hybrid_score) }}</span>
+          </div>
+        </div>
+        <div class="movie-card-footer">
+          <a href="{{ url_for('recommend', title=rec.title_x) }}" class="btn btn-primary btn-sm">Similar Films</a>
+          {% if session.get('username') %}
+          <form method="POST" action="{{ url_for('rate_movie') }}" class="inline-rate">
+            <input type="hidden" name="title" value="{{ rec.title_x }}">
+            <select name="rating" class="rating-select">
+              <option value="">Rate</option>
+              {% for i in [1,2,3,4,5] %}<option value="{{ i }}">{{ i }}⭐</option>{% endfor %}
+            </select>
+            <button type="submit" class="btn btn-ghost btn-sm">✓</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-content">
+    <div class="section-header">
+      <h2>Content-Based Recommendations</h2>
+      <span class="badge">Cast + Director + Genre Match</span>
+    </div>
+    <div class="movies-grid">
+      {% for rec in content_recs %}
+      <div class="movie-card">
+        <div class="movie-card-body">
+          <h3 class="movie-title"><a href="{{ url_for('recommend', title=rec.title_x) }}">{{ rec.title_x }}</a></h3>
+          <p class="movie-overview">{{ rec.overview[:100] if rec.overview else "" }}...</p>
+          <div class="movie-meta">
+            <span class="score">⭐ {{ "%.1f"|format(rec.vote_average) }}</span>
+            <span class="tag">{{ rec.similarity }}% match</span>
+          </div>
+        </div>
+        <div class="movie-card-footer">
+          <a href="{{ url_for('recommend', title=rec.title_x) }}" class="btn btn-primary btn-sm">Similar Films</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

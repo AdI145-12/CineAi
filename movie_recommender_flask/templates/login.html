@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Login — CineAI{% endblock %}
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <svg width="40" height="40" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M8 10 L8 18 L20 14 Z" fill="currentColor"/>
+        <circle cx="20" cy="8" r="3" fill="var(--color-primary)"/>
+      </svg>
+      <h2>Welcome back</h2>
+      <p>Login to get personalized movie recommendations</p>
+    </div>
+    <form method="POST" class="auth-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Your username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Login</button>
+    </form>
+    <div class="auth-footer">
+      <p>No account? <a href="{{ url_for('register') }}">Sign up free</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}

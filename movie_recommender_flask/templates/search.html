@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Search — CineAI{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="section-header">
+    <h2>Search Movies</h2>
+  </div>
+  <form class="search-bar" action="{{ url_for('search') }}" method="get" style="margin-bottom:var(--space-8)">
+    <input type="text" name="q" value="{{ query }}" id="search-input" placeholder="Search movie titles..." autocomplete="off">
+    <button type="submit" class="btn btn-primary">Search</button>
+    <div class="autocomplete-dropdown" id="autocomplete"></div>
+  </form>
+
+  {% if query %}
+    <p class="results-meta">{{ results|length }} results for "<strong>{{ query }}</strong>"</p>
+  {% endif %}
+
+  <div class="movies-grid">
+    {% for movie in results %}
+    <div class="movie-card">
+      <div class="movie-card-body">
+        <div class="movie-genres">
+          {% for g in movie.genres[:2] %}<span class="tag">{{ g }}</span>{% endfor %}
+        </div>
+        <h3 class="movie-title">{{ movie.title_x }}</h3>
+        <p class="movie-overview">{{ movie.overview[:120] if movie.overview else "No description available." }}...</p>
+        <div class="movie-meta">
+          <span class="score">⭐ {{ "%.1f"|format(movie.vote_average) }}</span>
+        </div>
+      </div>
+      <div class="movie-card-footer">
+        <a href="{{ url_for('recommend', title=movie.title_x) }}" class="btn btn-primary btn-sm">Get Recommendations</a>
+        {% if session.get('username') %}
+        <form method="POST" action="{{ url_for('rate_movie') }}" class="inline-rate">
+          <input type="hidden" name="title" value="{{ movie.title_x }}">
+          <select name="rating" class="rating-select">
+            <option value="">Rate</option>
+            {% for i in [1,2,3,4,5] %}<option value="{{ i }}">{{ i }}⭐</option>{% endfor %}
+          </select>
+          <button type="submit" class="btn btn-ghost btn-sm">✓</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if query and not results %}
+  <div class="empty-state">
+    <div class="empty-icon">🎬</div>
+    <h3>No movies found</h3>
+    <p>Try a different search term</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">Browse Top Movies</a>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
